@@ -11,6 +11,8 @@
   left: 1.5cm,
   top: 1.5cm,
 ))
+#set list(indent: 10pt)
+#set enum(indent: 10pt)
 
 #show title: set align(center)
 #show link: set text(rgb("005eff"))
@@ -165,6 +167,7 @@ $
 We can also replace 1, and the negligible function with $c$ and $s$ (completeness, and soundness). These are equivalent
 as long as $c - s >= 1 / p(n)$
 
+#pagebreak()
 == Interactive Proof for QR
 Let us define $
   cal(L) = {(N, y) : y " is a quadratic residue " mod N}
@@ -181,7 +184,7 @@ $
 & V " checks " z^2 = s y^b (mod N)
 $
 Let's prove this: \
-*Correctness* If $(N, y) in cal(L)$, then teh verifier accepts the proof with probability 1: \
+*Correctness* If $(N, y) in cal(L)$, then the verifier accepts the proof with probability 1: \
 *Proof*: $
   z^2 & = (r x^b)^2 \ 
       & = r^2 (x^2)^b \
@@ -192,6 +195,59 @@ So the verifier's check passes, and it accepts.
 *Soundness*: If $(N, y) in.not cal(L)$, then for every cheating prover $P^*$, the verifier accepts with probability at
 most $1/2$: \
 *Proof*: We will begin by noting that we repeat the proof request $n$ times, and so we may change the claim to accepting
-with probability at most $(1/2)^n$. The rest of the proof is left as an exercise for the reader.
+with probability at most $(1/2)^n$. The rest of the proof is left as an exercise for the reader. By following through
+what happens if $P^*$ sends a random number, and whether or not it is a square number, we can see that it will succeed
+with probability $1/2$ every time, so when we repeat $n$ times, it is a negligible function.
 
+= Defining Zero Knowledge
+So, we can see above the concept of a Zero Knowledge Proof, but what does that actually _mean_? The setting of a ZKP is
+that we have a Prover ($P$), and a Verifier ($V$), with some sort of communication between them. In the previous
+example, we have the messages $s, b, r$ from the prover, the verifier, and the prover. Let us consider what the verifier
+learns: $
+  "View"  = (s, b, r)
+$
+Let us consider, communication as $P (x, w) <==> V(x)$ (so we want to hide $w$), if thanks to an algorithm we will call _Simulator_ such that $
+  "Simulator" (x) --> (x, s', b', r')
+$
+If thanks to $x$, we may create $(x, s', b', r')$, such that $(s, b, r) approx (s', b', r')$ (similar probabilities),
+then we're very happy. Why? We have gained information that we are not meant to have. 
+
+In a more general setting: \
+_Definition._ Consider a protocol between $P$ and $V$, where $[P(x, w) <==> V(x)]$, the protocol is *Zero Knowledge* if
+$
+  S_("PPT") (x) -> "view"' approx "view"
+$
+So, there exists a simulator that may create very similar results to the view. How similar? This gets to the concept of
+kinds of zero knowledge:
+- Perfect ZK (the two distributions are _identical_)
+- Statistical ZK (the two distributions are _statistically indistinguishable_ (negligible difference))
+- Computational ZK (the two distributions are _computationally indistinguishable_ (negligible difference))
+
+We have already discussed ZK for QR. We have proven completeness, and soundness. We will claim that this protocol is ZK.
+We will note that our View is the following triple $(s, b, z)$. We will build the simulator $"Sim" (y) => (s', b', z')$
+as follows: 
++ Pick a random bit $b <- {0, 1}$
++ Pick a random $z in ZZ^*_N$ 
++ Compute $s = z^2 / y^b$
++ Output $(s, b, z)$
+We have created a simulator, and the simulated transcript is identically distributed to the real transcript, so this
+protocol is _Perfect Zero Knowledge_.
+
+We can also consider what happens if $V$ is not honest. We had the definition: \
+An Interactive Protocol is _honest-verifier_ perfect zero knowledge for a language $L$ if there exists a PPT
+simulator $S$ such that for every $x in L$, the following two distributions are identical: $
+  "view"_V (P, V) 
+#colbreak()
+#colbreak()
+  S (x, 1 ^ lambda)
+$
+
+We now create the real definition: \
+An Interactive Protocol is _perfect zero knowledge_ for a language $L$ if for every PPT $V^*$, there exists a (expected)
+PPT simulator $S$, such that for every $x in L$, the following two distributions are identical: $
+  "view"_(V^*) (P, V^*) 
+#colbreak()
+#colbreak()
+  S (x, 1 ^ lambda)
+$
 
